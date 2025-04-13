@@ -71,7 +71,8 @@ Toujours en train d'apprendre, toujours prête à résoudre des problèmes concr
 ## 📜 Certifications & Formations
 
 - 🎓 **RNCP Bac+2 - Technicien Informatique** – OpenClassrooms  
-- 🎓 **Google IT Support – Spécialisation Cybersécurité**  
+- 🎓 **Google Certification Cybersecurity**
+  
 - 📚 **En veille constante** : https://start.me/p/y95XQD/cybersec  
 
 ---
