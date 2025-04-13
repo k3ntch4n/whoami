@@ -53,6 +53,8 @@ Toujours en train d'apprendre, toujours prête à résoudre des problèmes concr
 ![Docker](https://img.shields.io/badge/Container-Docker-blue?logo=docker)  
 ![VS Code](https://img.shields.io/badge/IDE-VS%20Code-blue?logo=visualstudiocode)  
 ![GLPI](https://img.shields.io/badge/ITSM-GLPI-orange)
+![ServiceNow](https://img.shields.io/badge/ITSM-ServiceNow-brightgreen?logo=servicenow&logoColor=white)
+
 
 
 ---
