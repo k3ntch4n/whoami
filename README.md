@@ -63,8 +63,8 @@ Toujours en train d'apprendre, toujours prête à résoudre des problèmes concr
 
 - 🐧 **Raspberry Pi VPN** – Accès sécurisé à mon réseau domestique  
 - 🛰️ **[RECONTool](https://github.com/k3ntch4n/recon-tool)** *(en cours)* – Outil Python d'automatisation de reconnaissance réseau & OSINT. Scans, collecte d’infos, parsing & reporting en un clic.  
-- 🔐 **Environnement pentest** – Cibles vulnérables + outils red team  
-- 🌐 **Portfolio web** – Démo de mes compétences tech  
+- 🔐 **[Secure Password Tool](https://k3ntch4n.github.io/)** – transmission sécurisé de mot de passe ou message via le web 
+- 🌐 ** CyberSec HomeLAB ** – Création d'un HomeLAB avec PFSense, SIEM (WAZUH), IDS/IPS... ( en cours )
 
 ---
 
