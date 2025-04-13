@@ -79,6 +79,6 @@ Toujours en train d'apprendre, toujours prête à résoudre des problèmes concr
 ## 📫 Contact
 
 ```bash 
-🔗 https://www.linkedin.com/in/tamara-w-521256201/
-🐙 https://github.com/tk3ntch4n  
+🐙 https://github.com/k3ntch4n
+
 
