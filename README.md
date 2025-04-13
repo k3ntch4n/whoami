@@ -62,7 +62,7 @@ Toujours en train d'apprendre, toujours prête à résoudre des problèmes concr
 ## 🧪 Projets perso
 
 - 🐧 **Raspberry Pi VPN** – Accès sécurisé à mon réseau domestique  
-- 🛰️ **[RECON Automation Tool](https://github.com/ton-pseudo/recon-tool)** *(en cours)* – Outil Python d'automatisation de reconnaissance réseau & OSINT. Scans, collecte d’infos, parsing & reporting en un clic.  
+- 🛰️ **[RECONTool](https://github.com/k3ntch4n/recon-tool)** *(en cours)* – Outil Python d'automatisation de reconnaissance réseau & OSINT. Scans, collecte d’infos, parsing & reporting en un clic.  
 - 🔐 **Environnement pentest** – Cibles vulnérables + outils red team  
 - 🌐 **Portfolio web** – Démo de mes compétences tech  
 
