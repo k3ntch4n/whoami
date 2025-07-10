@@ -19,7 +19,6 @@ J'aime comprendre, automatiser, sécuriser et faire évoluer les systèmes.
 Toujours en train d'apprendre, toujours prête à résoudre des problèmes concrets.
 
 - 💼 Actuellement chez **Experis** (support N1)  
-- 🎯 En recherche d'une **alternance en administration systèmes et réseaux**  
 - 🌱 Entraînement : pentest, Docker, Active Directory, Raspberry Pi, VPN, supervision, SIEM, Pare-Feu...
 
 ---
