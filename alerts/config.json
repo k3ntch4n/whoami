@@ -1,0 +1,29 @@
+{
+  "youtube_channels": [
+    { "handle": "@tvN", "label": "tvN", "filter": true },
+    { "handle": "@tvNDENT", "label": "tvN D ENT", "filter": true },
+    { "handle": "@IVEstarship", "label": "IVE officiel", "filter": true }
+  ],
+  "keywords": [
+    "지구오락실",
+    "지락실",
+    "earth arcade",
+    "안유진",
+    "유진",
+    "yujin",
+    "ahn yujin",
+    "an yujin"
+  ],
+  "news_feeds": [
+    { "query": "지구오락실", "lang": "ko" },
+    { "query": "안유진", "lang": "ko" },
+    { "query": "\"Earth Arcade\" OR \"An Yujin\" OR \"Ahn Yujin\"", "lang": "en" },
+    { "query": "\"Earth Arcade\" OR \"An Yujin\" OR \"Ahn Yujin\" OR \"Yujin IVE\"", "lang": "fr" }
+  ],
+  "event_keywords": [
+    "콘서트", "팬미팅", "컴백", "쇼케이스", "투어", "예정", "첫 방송", "방송 확정", "시즌", "생방송", "라이브",
+    "concert", "fan meeting", "fanmeeting", "comeback", "tour", "showcase", "season", "premiere", "live",
+    "tournée", "saison", "diffusion"
+  ],
+  "max_news_per_run": 8
+}
