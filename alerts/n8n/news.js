@@ -30,15 +30,26 @@ const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 // Google News ajoute " - Nom du média" : on l'enlève pour repérer le même article dans plusieurs flux
 const key = title => title.replace(/\s+-\s+[^-]+$/, '').toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, '');
 
+const HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+  // évite la page de consentement Google sur les serveurs européens
+  'Cookie': 'CONSENT=YES+cb; SOCS=CAI',
+};
 const fresh = [];
+const errors = [];
+let total = 0;
 for (const url of FEEDS) {
   let xml;
   try {
-    xml = String(await helpers.httpRequest({ url, headers: { 'User-Agent': 'Mozilla/5.0' }, json: false }));
+    xml = String(await helpers.httpRequest({ url, headers: HEADERS, json: false }));
   } catch (e) {
+    errors.push(e.message);
     continue;
   }
-  for (const it of xml.split('<item>').slice(1)) {
+  const items = xml.split('<item>').slice(1);
+  if (!items.length) errors.push('réponse sans article : ' + xml.slice(0, 80).replace(/\s+/g, ' '));
+  total += items.length;
+  for (const it of items) {
     const title = tag(it, 'title');
     const link = tag(it, 'link');
     const k = key(title);
@@ -49,11 +60,17 @@ for (const url of FEEDS) {
 }
 data.news = data.news.slice(-3000);
 data.newsInitialized = true;
-if (firstRun || !fresh.length) return [];
 
+if (!total) {
+  return [{ json: { text: '⚠️ Google News inaccessible depuis n8n :\n' + esc(errors.join('\n').slice(0, 500)) } }];
+}
+if (!fresh.length) return [];
+
+// au premier lancement, on envoie seulement les 5 plus récentes pour montrer que ça marche
 fresh.sort((a, b) => b.pub - a.pub);
-const lines = fresh.slice(0, MAX_PER_MESSAGE).map(n => {
+const header = firstRun ? '📰 <b>Dernières actus Earth Arcade / Yujin</b>' : '📰 <b>Actus Earth Arcade / Yujin</b>';
+const lines = fresh.slice(0, firstRun ? 5 : MAX_PER_MESSAGE).map(n => {
   const prefix = EVENT_WORDS.some(w => n.title.toLowerCase().includes(w)) ? '📅 ' : '• ';
   return `${prefix}<a href="${esc(n.link)}">${esc(n.title)}</a>`;
 });
-return [{ json: { text: '📰 <b>Actus Earth Arcade / Yujin</b>\n' + lines.join('\n') } }];
+return [{ json: { text: header + '\n' + lines.join('\n') } }];
