@@ -36,18 +36,37 @@ const fmt = ts => new Date(ts * 1000).toLocaleString('fr-FR', {
   timeZone: 'Europe/Paris', weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
 });
 
-// Traduction automatique en français (Google Translate, sans clé). En cas d'échec on garde le titre d'origine.
+// Traduction automatique en français : Google Translate, puis MyMemory en secours (gratuits, sans clé).
+// En cas d'échec on garde le titre d'origine et on signale l'erreur en bas du message.
+const TR_ERRORS = [];
+let trOk = 0;
+async function fetchJson(url) {
+  let r = await helpers.httpRequest({ url, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' } });
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(r)) r = r.toString('utf8');
+  if (typeof r === 'string') r = JSON.parse(r);
+  return r;
+}
 async function translate(text) {
   if (!TRANSLATE || !text) return { text, lang: null };
   try {
-    const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=' + encodeURIComponent(text);
-    let r = await helpers.httpRequest({ url, headers: { 'User-Agent': 'Mozilla/5.0' } });
-    if (typeof r === 'string') r = JSON.parse(r);
+    const r = await fetchJson('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=' + encodeURIComponent(text));
     const fr = r[0].map(seg => seg[0]).join('');
-    return { text: fr || text, lang: r[2] };
+    if (fr) { trOk++; return { text: fr, lang: r[2] }; }
+    throw new Error('réponse vide');
   } catch (e) {
-    return { text, lang: null };
+    TR_ERRORS.push('Google : ' + e.message);
   }
+  // secours : MyMemory (on ne traduit que le coréen et l'anglais)
+  const lang = /[가-힯]/.test(text) ? 'ko' : 'en';
+  try {
+    const r = await fetchJson(`https://api.mymemory.translated.net/get?langpair=${lang}|fr&q=` + encodeURIComponent(text));
+    const fr = r && r.responseData && r.responseData.translatedText;
+    if (fr && Number(r.responseStatus) === 200) { trOk++; return { text: decode(fr), lang }; }
+    throw new Error(String((r && r.responseDetails) || 'réponse vide'));
+  } catch (e) {
+    TR_ERRORS.push('MyMemory : ' + e.message);
+  }
+  return { text, lang: null };
 }
 // titre traduit + titre d'origine en dessous (si ce n'était pas du français)
 async function bilingual(title) {
@@ -55,6 +74,9 @@ async function bilingual(title) {
   if (!t.lang || t.lang === 'fr') return { main: title, original: '' };
   return { main: t.text, original: SHOW_ORIGINAL ? title : '' };
 }
+const trWarning = () => (TRANSLATE && TR_ERRORS.length && !trOk)
+  ? '\n\n⚠️ Traduction impossible : ' + esc(TR_ERRORS.slice(0, 2).join(' / ').slice(0, 300))
+  : '';
 
 async function channelId(c) {
   if (c.startsWith('UC')) return c;
@@ -111,7 +133,7 @@ for (const c of CHANNELS) {
     if (s.status === 'upcoming') head = '⏰ <b>Live programmé</b>' + (s.start ? ` — ${fmt(s.start)}` : '');
     const t = await bilingual(title);
     const orig = t.original ? `\n🇰🇷 <i>${esc(t.original)}</i>` : '';
-    out.push({ json: { text: `${head}\n<b>${esc(t.main)}</b>${orig}\nhttps://www.youtube.com/watch?v=${vid}` } });
+    out.push({ json: { text: `${head}\n<b>${esc(t.main)}</b>${orig}\nhttps://www.youtube.com/watch?v=${vid}` + trWarning() } });
   }
 }
 
@@ -122,7 +144,7 @@ for (const [vid, p] of Object.entries(data.pending)) {
   if (s.status === 'live') {
     const t = await bilingual(p.title);
     const orig = t.original ? `\n🇰🇷 <i>${esc(t.original)}</i>` : '';
-    out.push({ json: { text: `🔴 <b>EN DIRECT maintenant !</b>\n<b>${esc(t.main)}</b>${orig}\nhttps://www.youtube.com/watch?v=${vid}` } });
+    out.push({ json: { text: `🔴 <b>EN DIRECT maintenant !</b>\n<b>${esc(t.main)}</b>${orig}\nhttps://www.youtube.com/watch?v=${vid}` + trWarning() } });
     delete data.pending[vid];
   } else if (s.status === 'none') {
     delete data.pending[vid]; // terminé ou annulé
