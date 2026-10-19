@@ -7,6 +7,8 @@ const FEEDS = [
 const EVENT_WORDS = ['콘서트', '팬미팅', '컴백', '쇼케이스', '투어', '예정', '라이브', 'concert', 'fan meeting', 'comeback',
   'tour', 'showcase', 'live', 'season', 'saison', 'tournée'];
 const EVERY_MINUTES = 30;
+const TRANSLATE = true;      // traduire les titres en français
+const SHOW_ORIGINAL = true;  // garder le titre d'origine en dessous (pour t'entraîner)
 const MAX_PER_MESSAGE = 8;
 // ====================
 
@@ -27,6 +29,25 @@ const tag = (xml, name) => {
   return m ? decode(m[1]) : '';
 };
 const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// Traduction automatique en français (Google Translate, sans clé). En cas d'échec on garde le titre d'origine.
+async function translate(text) {
+  if (!TRANSLATE || !text) return { text, lang: null };
+  try {
+    const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=' + encodeURIComponent(text);
+    let r = await helpers.httpRequest({ url, headers: { 'User-Agent': 'Mozilla/5.0' } });
+    if (typeof r === 'string') r = JSON.parse(r);
+    const fr = r[0].map(seg => seg[0]).join('');
+    return { text: fr || text, lang: r[2] };
+  } catch (e) {
+    return { text, lang: null };
+  }
+}
+// titre traduit + titre d'origine en dessous (si ce n'était pas du français)
+async function bilingual(title) {
+  const t = await translate(title);
+  if (!t.lang || t.lang === 'fr') return { main: title, original: '' };
+  return { main: t.text, original: SHOW_ORIGINAL ? title : '' };
+}
 // Google News ajoute " - Nom du média" : on l'enlève pour repérer le même article dans plusieurs flux
 const key = title => title.replace(/\s+-\s+[^-]+$/, '').toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, '');
 
@@ -69,8 +90,11 @@ if (!fresh.length) return [];
 // au premier lancement, on envoie seulement les 5 plus récentes pour montrer que ça marche
 fresh.sort((a, b) => b.pub - a.pub);
 const header = firstRun ? '📰 <b>Dernières actus Earth Arcade / Yujin</b>' : '📰 <b>Actus Earth Arcade / Yujin</b>';
-const lines = fresh.slice(0, firstRun ? 5 : MAX_PER_MESSAGE).map(n => {
+const lines = [];
+for (const n of fresh.slice(0, firstRun ? 5 : MAX_PER_MESSAGE)) {
   const prefix = EVENT_WORDS.some(w => n.title.toLowerCase().includes(w)) ? '📅 ' : '• ';
-  return `${prefix}<a href="${esc(n.link)}">${esc(n.title)}</a>`;
-});
-return [{ json: { text: header + '\n' + lines.join('\n') } }];
+  const t = await bilingual(n.title);
+  const orig = t.original ? `\n    <i>${esc(t.original)}</i>` : '';
+  lines.push(`${prefix}<a href="${esc(n.link)}">${esc(t.main)}</a>${orig}`);
+}
+return [{ json: { text: header + '\n' + lines.join('\n\n') } }];

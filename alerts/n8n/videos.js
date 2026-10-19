@@ -1,6 +1,8 @@
 // ===== RÉGLAGES =====
 // Chaînes surveillées : @handle ou ID "UC..." (Partager la chaîne > Copier l'ID de la chaîne)
 const CHANNELS = ['@tvN', '@IVEstarship', '@channel15ya'];
+const TRANSLATE = true;      // traduire les titres en français
+const SHOW_ORIGINAL = true;  // garder le titre coréen en dessous (pour t'entraîner)
 const KEYWORDS = ['지구오락실', '지락실', 'earth arcade', '안유진', 'an yujin', 'ahn yujin', 'yujin'];
 // ====================
 
@@ -33,6 +35,26 @@ const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 const fmt = ts => new Date(ts * 1000).toLocaleString('fr-FR', {
   timeZone: 'Europe/Paris', weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
 });
+
+// Traduction automatique en français (Google Translate, sans clé). En cas d'échec on garde le titre d'origine.
+async function translate(text) {
+  if (!TRANSLATE || !text) return { text, lang: null };
+  try {
+    const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=fr&dt=t&q=' + encodeURIComponent(text);
+    let r = await helpers.httpRequest({ url, headers: { 'User-Agent': 'Mozilla/5.0' } });
+    if (typeof r === 'string') r = JSON.parse(r);
+    const fr = r[0].map(seg => seg[0]).join('');
+    return { text: fr || text, lang: r[2] };
+  } catch (e) {
+    return { text, lang: null };
+  }
+}
+// titre traduit + titre d'origine en dessous (si ce n'était pas du français)
+async function bilingual(title) {
+  const t = await translate(title);
+  if (!t.lang || t.lang === 'fr') return { main: title, original: '' };
+  return { main: t.text, original: SHOW_ORIGINAL ? title : '' };
+}
 
 async function channelId(c) {
   if (c.startsWith('UC')) return c;
@@ -87,7 +109,9 @@ for (const c of CHANNELS) {
     let head = '🎬 <b>Nouvelle vidéo</b>';
     if (s.status === 'live') head = '🔴 <b>EN DIRECT maintenant !</b>';
     if (s.status === 'upcoming') head = '⏰ <b>Live programmé</b>' + (s.start ? ` — ${fmt(s.start)}` : '');
-    out.push({ json: { text: `${head}\n<b>${esc(title)}</b>\nhttps://www.youtube.com/watch?v=${vid}` } });
+    const t = await bilingual(title);
+    const orig = t.original ? `\n🇰🇷 <i>${esc(t.original)}</i>` : '';
+    out.push({ json: { text: `${head}\n<b>${esc(t.main)}</b>${orig}\nhttps://www.youtube.com/watch?v=${vid}` } });
   }
 }
 
@@ -96,7 +120,9 @@ for (const [vid, p] of Object.entries(data.pending)) {
   if (Date.now() - p.added > 3 * 24 * 3600 * 1000) { delete data.pending[vid]; continue; }
   const s = await getStatus(vid);
   if (s.status === 'live') {
-    out.push({ json: { text: `🔴 <b>EN DIRECT maintenant !</b>\n<b>${esc(p.title)}</b>\nhttps://www.youtube.com/watch?v=${vid}` } });
+    const t = await bilingual(p.title);
+    const orig = t.original ? `\n🇰🇷 <i>${esc(t.original)}</i>` : '';
+    out.push({ json: { text: `🔴 <b>EN DIRECT maintenant !</b>\n<b>${esc(t.main)}</b>${orig}\nhttps://www.youtube.com/watch?v=${vid}` } });
     delete data.pending[vid];
   } else if (s.status === 'none') {
     delete data.pending[vid]; // terminé ou annulé
