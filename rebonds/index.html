@@ -445,10 +445,6 @@ canvas { display: block; touch-action: none; }
     $("over").hidden = true;
     $("btn-recall").disabled = true;
     spawnRow(1); shiftT = 1; mode = "shift";
-    // move first row down one so the top stays clear
-    S.bricks.pop(); S.bricks.unshift(emptyRow());
-    S.picks.pop(); S.picks.unshift(emptyRow());
-    S.vals.pop(); S.vals.unshift(emptyRow());
   }
 
   // ---------- update ----------
