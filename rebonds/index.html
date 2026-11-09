@@ -184,7 +184,7 @@ canvas { display: block; touch-action: none; }
 
   function freshState() {
     const bestScore = (S && S.bestScore) || 0;
-    return { level: 2, balls: 1, launchX: W / 2, best: (S && S.best) || 1,
+    return { level: 1, balls: 1, launchX: W / 2, best: (S && S.best) || 1,
       score: 0, bestScore, startBest: bestScore, recordShown: false,
       vals: Array.from({ length: MAXROWS + 1 }, emptyRow),
       bricks: Array.from({ length: MAXROWS + 1 }, emptyRow),
@@ -415,7 +415,7 @@ canvas { display: block; touch-action: none; }
     balls = []; particles = []; flashes.clear();
     $("over").hidden = true;
     $("btn-recall").disabled = true;
-    spawnRow(2); shiftT = 1; mode = "shift";
+    spawnRow(1); shiftT = 1; mode = "shift";
     // move first row down one so the top stays clear
     S.bricks.pop(); S.bricks.unshift(emptyRow());
     S.picks.pop(); S.picks.unshift(emptyRow());
