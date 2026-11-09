@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#c4c6bf">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Chakra+Petch:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Chakra+Petch:wght@500;700&display=swap">
 <style>
 /* Layout: a handheld console — HUD strip, LCD screen that fills the free height, chunky buttons under it. Single deliberate look (LCD on grey plastic). */
 :root {
@@ -20,7 +20,7 @@
   --key: #d2552d;
   --key-dark: #8f3519;
   --label: #4a4d45;
-  --font-lcd: "Silkscreen", ui-monospace, "Courier New", monospace;
+  --font-lcd: "Rubik", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-ui: "Chakra Petch", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: light;
 }
@@ -56,7 +56,7 @@ body {
 .hud {
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
   background: var(--lcd); color: var(--ink);
-  font-family: var(--font-lcd); font-size: 15px;
+  font-family: var(--font-lcd); font-size: 16px; font-weight: 600;
   padding: 6px 10px 5px;
   border-bottom: 2px solid var(--ink);
   font-variant-numeric: tabular-nums;
@@ -156,7 +156,7 @@ canvas { display: block; touch-action: none; }
   const W = COLS * CELL;
   const MIN_H = TOP + 9 * CELL + CELL + 8;
   let H = MIN_H, FLOOR = H - 8; // the ground follows the screen height
-  const R = 7.5;                 // ball radius
+  const R = 6;                 // ball radius
   const SPEED = 10;              // px per frame at x1
   const SUB = 3;                 // substeps per frame (5px each, < R)
   const LAUNCH_GAP = 5;          // frames between two balls
@@ -195,8 +195,7 @@ canvas { display: block; touch-action: none; }
     const cols = [...Array(COLS).keys()].sort(() => Math.random() - 0.5);
     const pickCol = cols.shift();
     S.picks[0][pickCol] = 1;
-    const maxN = level < 6 ? 3 : level < 15 ? 4 : 5;
-    const n = 2 + Math.floor(Math.random() * maxN); // 2 to 6 bricks per row
+    const n = 1 + Math.floor(Math.random() * (COLS - 1)); // 1 to 6 bricks, any level
     for (let i = 0; i < n; i++) {
       const double = level > 5 && Math.random() < 0.22;
       S.vals[0][cols[i]] = S.bricks[0][cols[i]] = double ? level * 2 : level;
@@ -486,8 +485,8 @@ canvas { display: block; touch-action: none; }
         ctx.lineWidth = fl ? 5 : 3; ctx.strokeStyle = INK;
         ctx.strokeRect(x0, y + GAP + 2, s, s);
         ctx.fillStyle = INK;
-        const fs = hp >= 1000 ? 15 : hp >= 100 ? 18 : 22;
-        ctx.font = `700 ${fs}px Silkscreen, ui-monospace, monospace`;
+        const fs = hp >= 1000 ? 17 : hp >= 100 ? 20 : 24;
+        ctx.font = `600 ${fs}px Rubik, system-ui, sans-serif`;
         ctx.fillText(String(hp), c * CELL + CELL / 2, y + CELL / 2 + 1);
       }
       if (S.picks[r][c]) {
@@ -527,14 +526,14 @@ canvas { display: block; touch-action: none; }
     if (showLauncher) {
       ctx.beginPath(); ctx.arc(S.launchX, FLOOR - R, R, 0, Math.PI * 2); ctx.fill();
       const count = mode === "shoot" ? toLaunch : S.balls;
-      ctx.font = "700 14px Silkscreen, ui-monospace, monospace";
+      ctx.font = "700 14px Rubik, system-ui, sans-serif";
       const lx = Math.min(Math.max(S.launchX, 30), W - 30);
       ctx.fillText("x" + count, lx, FLOOR - R - 22);
     }
     if (mode === "shoot" && nextX !== null && landed > 0) {
       ctx.beginPath(); ctx.arc(nextX, FLOOR - R, R, 0, Math.PI * 2); ctx.fill();
       if (!(toLaunch > 0 && Math.abs(nextX - S.launchX) < 50)) {
-        ctx.font = "700 14px Silkscreen, ui-monospace, monospace";
+        ctx.font = "700 14px Rubik, system-ui, sans-serif";
         ctx.fillText("x" + landed, Math.min(Math.max(nextX, 30), W - 30), FLOOR - R - 22);
       }
     }
@@ -549,7 +548,7 @@ canvas { display: block; touch-action: none; }
     if (recordBanner > 0 && Math.floor(recordBanner / 12) % 2 === 0) {
       const by = H * 0.55;
       ctx.fillStyle = INK; ctx.fillRect(W / 2 - 130, by - 20, 260, 40);
-      ctx.fillStyle = LCD; ctx.font = "700 20px Silkscreen, ui-monospace, monospace";
+      ctx.fillStyle = LCD; ctx.font = "700 20px Rubik, system-ui, sans-serif";
       ctx.fillText("NOUVEAU RECORD", W / 2, by + 1);
       ctx.fillStyle = INK;
     }
@@ -651,7 +650,7 @@ canvas { display: block; touch-action: none; }
   }
   window.claude?.hot?.snapshot?.(() => ({ S, sound }));
   const boot = window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-  document.fonts && document.fonts.load("700 20px Silkscreen").catch(() => {});
+  document.fonts && document.fonts.load("600 20px Rubik").catch(() => {});
 })();
 </script>
 </body>
