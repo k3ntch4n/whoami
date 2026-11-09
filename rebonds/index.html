@@ -146,10 +146,10 @@ canvas { display: block; touch-action: none; }
   "use strict";
   // ---------- constants (board units) ----------
   const COLS = 7, ROWS = 9, CELL = 60, GAP = 3;
-  const TOP = 24;
+  const TOP = 6;
   const W = COLS * CELL;
-  const FLOOR = TOP + ROWS * CELL + CELL; // y of the ground line
-  const H = FLOOR + 8;
+  const MIN_H = TOP + ROWS * CELL + CELL + 8;
+  let H = MIN_H, FLOOR = H - 8; // the ground follows the screen height
   const R = 7.5;                 // ball radius
   const SPEED = 15;              // px per frame at x1
   const SUB = 3;                 // substeps per frame (5px each, < R)
@@ -437,8 +437,8 @@ canvas { display: block; touch-action: none; }
     ctx.fillStyle = LCD; ctx.fillRect(0, 0, W, H);
 
     // ground line + danger hint
-    ctx.fillStyle = "rgba(31,36,24,.10)";
-    ctx.fillRect(0, TOP + ROWS * CELL, W, CELL);
+    ctx.fillStyle = "rgba(31,36,24,.35)";
+    for (let x = 4; x < W; x += 14) ctx.fillRect(x, TOP + ROWS * CELL, 7, 2);
     ctx.fillStyle = INK;
     ctx.fillRect(0, FLOOR, W, 2);
 
@@ -451,12 +451,9 @@ canvas { display: block; touch-action: none; }
       if (hp) {
         const x0 = c * CELL + GAP + 2, s = CELL - 2 * GAP - 4;
         const fl = flashes.get(r * COLS + c);
-        const heat = Math.min(1, hp / (lvl * 1.4));
-        ctx.fillStyle = fl ? INK : `rgba(31,36,24,${0.05 + heat * 0.32})`;
-        ctx.fillRect(x0, y + GAP + 2, s, s);
-        ctx.lineWidth = 3; ctx.strokeStyle = INK;
+        ctx.lineWidth = fl ? 5 : 3; ctx.strokeStyle = INK;
         ctx.strokeRect(x0, y + GAP + 2, s, s);
-        ctx.fillStyle = fl ? LCD : INK;
+        ctx.fillStyle = INK;
         const fs = hp >= 1000 ? 15 : hp >= 100 ? 18 : 22;
         ctx.font = `700 ${fs}px Silkscreen, ui-monospace, monospace`;
         ctx.fillText(String(hp), c * CELL + CELL / 2, y + CELL / 2 + 1);
@@ -487,7 +484,11 @@ canvas { display: block; touch-action: none; }
 
     // balls
     ctx.fillStyle = INK;
-    for (const b of balls) { ctx.beginPath(); ctx.arc(b.x, b.y, R, 0, Math.PI * 2); ctx.fill(); }
+    let landed = 0;
+    for (const b of balls) {
+      if (b.home) { landed++; continue; }
+      ctx.beginPath(); ctx.arc(b.x, b.y, R, 0, Math.PI * 2); ctx.fill();
+    }
 
     // launcher
     const showLauncher = mode === "aim" || mode === "shift" || (mode === "shoot" && toLaunch > 0);
@@ -498,10 +499,12 @@ canvas { display: block; touch-action: none; }
       const lx = Math.min(Math.max(S.launchX, 30), W - 30);
       ctx.fillText("x" + count, lx, FLOOR - R - 22);
     }
-    if (mode === "shoot" && nextX !== null) {
-      ctx.globalAlpha = 0.35;
+    if (mode === "shoot" && nextX !== null && landed > 0) {
       ctx.beginPath(); ctx.arc(nextX, FLOOR - R, R, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 1;
+      if (!(toLaunch > 0 && Math.abs(nextX - S.launchX) < 50)) {
+        ctx.font = "700 14px Silkscreen, ui-monospace, monospace";
+        ctx.fillText("x" + landed, Math.min(Math.max(nextX, 30), W - 30), FLOOR - R - 22);
+      }
     }
 
     // particles
@@ -527,7 +530,10 @@ canvas { display: block; touch-action: none; }
 
   function resize() {
     const cw = screenEl.clientWidth, ch = screenEl.clientHeight;
-    scale = Math.min(cw / W, ch / H);
+    scale = Math.min(cw / W, ch / MIN_H);
+    H = Math.max(MIN_H, Math.floor(ch / scale));
+    FLOOR = H - 8;
+    for (const b of balls) if (b.home || b.y > FLOOR - R) b.y = FLOOR - R;
     dpr = Math.min(window.devicePixelRatio || 1, 3);
     canvas.style.width = Math.floor(W * scale) + "px";
     canvas.style.height = Math.floor(H * scale) + "px";
