@@ -460,7 +460,8 @@ canvas { display: block; touch-action: none; }
       shiftT = Math.max(0, shiftT - 0.09 * fast);
       if (shiftT === 0) finishShift();
     } else if (mode === "shoot") {
-      for (let k = 0; k < fast; k++) simFrame();
+      // stop as soon as the turn ends, otherwise x2/x4 would end it several times
+      for (let k = 0; k < fast && mode === "shoot"; k++) simFrame();
     }
     if (recordBanner > 0) recordBanner--;
     if (winTimer > 0 && winTimer-- % 12 === 0) burst(40 + Math.random() * (W - 80), 60 + Math.random() * H * 0.5, 16);
