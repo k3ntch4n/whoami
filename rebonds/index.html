@@ -322,7 +322,19 @@ canvas { display: block; touch-action: none; }
     }
   }
   function fanfare() {
-    [523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.16, 0.07, "square", "fan" + i, 0, i * 0.12));
+    // quick rising jingle when the record falls mid-game
+    [523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.11, 0.07, "square", "fan" + i, 0, i * 0.08));
+  }
+  function victory() {
+    // end-of-game fanfare for a new record
+    [[392, 0, 0.12], [523, 0.13, 0.12], [659, 0.26, 0.12], [784, 0.39, 0.22], [659, 0.66, 0.1], [784, 0.78, 0.1], [1047, 0.9, 0.55]]
+      .forEach(([f, d, l], i) => tone(f, f, l, 0.07, "square", "win" + i, 0, d));
+    tone(262, 262, 0.55, 0.12, "triangle", "winb", 0, 0.9);
+  }
+  function loseTune() {
+    // three falling notes, then a long sliding one
+    [[392, 0], [370, 0.3], [349, 0.6]].forEach(([f, d], i) => tone(f, f * 0.97, 0.26, 0.06, "square", "lose" + i, 0, d));
+    tone(330, 190, 0.9, 0.06, "square", "lose3", 0, 0.9);
   }
 
   function damage(r, c) {
@@ -421,7 +433,7 @@ canvas { display: block; touch-action: none; }
       : `<strong class="big">${S.score}</strong><br>points · niveau ${S.level}<br>record : ${S.bestScore}`;
     $("over").classList.toggle("win", won);
     $("over").hidden = false;
-    if (won) { fanfare(); winTimer = 150; } else beep(110, 0.5, 0.07);
+    if (won) { victory(); winTimer = 150; } else loseTune();
     S = freshState();
     save(); // the next launch starts a new game
   }
