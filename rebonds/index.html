@@ -342,7 +342,18 @@ canvas { display: block; touch-action: none; }
         b.y = m === 2 ? y0 - R : m === 3 ? y1 + R : b.y;
       } else {
         const d = Math.sqrt(d2); nx = dx / d; ny = dy / d;
-        b.x = cx + nx * R; b.y = cy + ny * R;
+        // the ball touched a corner; if a neighbouring brick sits flush against that corner,
+        // the surface is really flat there, so bounce as off the face instead of the corner
+        if (dx && dy) {
+          const hc = c + (dx > 0 ? 1 : -1), vr = r + (dy > 0 ? 1 : -1);
+          const flushSide = hc >= 0 && hc < COLS && S.bricks[r][hc] && (!S.shapes[r][hc] || dy < 0);
+          const flushAbove = vr >= 0 && vr <= MAXROWS && S.bricks[vr][c] && !S.shapes[vr][c];
+          if (flushSide) { nx = 0; ny = Math.sign(dy); }
+          else if (flushAbove) { nx = Math.sign(dx); ny = 0; }
+        }
+        if (nx === 0) b.y = cy + ny * R;
+        else if (ny === 0) b.x = cx + nx * R;
+        else { b.x = cx + nx * R; b.y = cy + ny * R; }
       }
       const dot = b.vx * nx + b.vy * ny;
       if (dot < 0) {
