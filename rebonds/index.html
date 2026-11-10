@@ -169,7 +169,9 @@ canvas { display: block; touch-action: none; }
   const LAUNCH_GAP = 5;          // frames between two balls
   const MIN_ANGLE = 0.13;        // radians from horizontal
   const SAVE_KEY = "rebonds.v1";
-  const BONUS = 5;               // balls given by a $ coin (every 10 levels)
+  const COIN_POINTS = 10;        // a $ coin (every 10 levels) gives 10 points per level
+  const LASER = 100;             // picks value >= LASER is a laser: LASER + dir*10 + turns left
+  const LASER_TURNS = 3;
   const CUT_CHANCE = 1 / 8;      // share of bricks cut diagonally at the bottom
 
   const canvas = document.getElementById("game");
@@ -187,7 +189,8 @@ canvas { display: block; touch-action: none; }
   let fast = 1;
   let sound = true;
   let particles = [];
-  let floats = []; // "+1" / "+5" texts
+  let floats = []; // "+1" / "+200" texts
+  let beams = [];  // laser flashes
   let scale = 1, dpr = 1;
 
   const emptyRow = () => new Array(COLS).fill(0);
@@ -208,7 +211,14 @@ canvas { display: block; touch-action: none; }
     S.picks[0][pickCol] = 1;
     const bonus = level % 10 === 0;
     let n = 1 + Math.floor(Math.random() * (COLS - 1)); // 1 to 6 bricks, any level
-    if (bonus) { n = Math.min(n, COLS - 2); S.picks[0][cols[n]] = 2; } // $ coin in a free column
+    // when bricks get close to the bottom, a laser shows up (one at a time)
+    const danger = S.bricks.some((row, r) => r >= ROWS - 4 && row.some(Boolean));
+    const laser = danger && !S.picks.some((row) => row.some((v) => v >= LASER));
+    // keep free columns for the extras, then place them after the bricks
+    n = Math.min(n, COLS - 1 - (bonus ? 1 : 0) - (laser ? 1 : 0));
+    let k = n;
+    if (bonus) S.picks[0][cols[k++]] = 2; // $ coin
+    if (laser) S.picks[0][cols[k++]] = LASER + Math.floor(Math.random() * 2) * 10 + LASER_TURNS;
     for (let i = 0; i < n; i++) {
       const double = level > 5 && Math.random() < 0.22;
       S.vals[0][cols[i]] = S.bricks[0][cols[i]] = double ? level * 2 : level;
@@ -222,6 +232,14 @@ canvas { display: block; touch-action: none; }
     S.picks.pop(); S.picks.unshift(emptyRow());
     S.vals.pop(); S.vals.unshift(emptyRow());
     S.shapes.pop(); S.shapes.unshift(emptyRow());
+    // lasers last a few turns, then fade away
+    for (let r = 0; r <= MAXROWS; r++) for (let c = 0; c < COLS; c++) {
+      const v = S.picks[r][c];
+      if (v >= LASER) {
+        if (v % 10 <= 1) { S.picks[r][c] = 0; burst(c * CELL + CELL / 2, TOP + r * CELL + CELL / 2, 8); }
+        else S.picks[r][c] = v - 1;
+      }
+    }
     spawnRow(S.level);
     // pickups that reach the bottom without being touched are lost
     for (let r = ROWS; r <= MAXROWS; r++) for (let c = 0; c < COLS; c++) if (S.picks[r][c]) {
@@ -274,6 +292,7 @@ canvas { display: block; touch-action: none; }
     wall: () => tone(520, 520, 0.025, 0.045, "triangle", "wall", 0.04),
     hit: () => tone(760 + Math.random() * 60, 1000, 0.045, 0.06, "square", "hit", 0.025),
     brk: () => { tone(420, 60, 0.18, 0.09, "square", "brk", 0.05); tone(1600, 1600, 0.04, 0.035, "square", "brk2", 0.05); },
+    zap: () => tone(1800, 220, 0.12, 0.05, "sawtooth", "zap", 0.06),
     coin: () => [988, 1319, 1568, 2093].forEach((f, i) => tone(f, f, 0.07, 0.06, "square", "coin" + i, 0.05, i * 0.05)),
     pick: () => { tone(988, 988, 0.06, 0.06, "square", "pk", 0.05); tone(1319, 1319, 0.09, 0.06, "square", "pk2", 0.05, 0.06); },
   };
@@ -288,10 +307,23 @@ canvas { display: block; touch-action: none; }
       if (S.picks[r][c] && !dry) {
         const px = c * CELL + CELL / 2, py = TOP + r * CELL + CELL / 2;
         if ((b.x - px) ** 2 + (b.y - py) ** 2 < (R + 11) ** 2) {
-          const v = pickValue(S.picks[r][c]);
-          S.picks[r][c] = 0; gained += v; v > 1 ? sfx.coin() : sfx.pick();
-          floats.push({ x: px, y: py, text: "+" + v, life: 50 });
-          burst(px, py, 6);
+          const v = S.picks[r][c];
+          if (v >= LASER) {
+            // a laser stays; it fires each time a ball goes through it
+            b.zap = b.zap || {};
+            const key = r * COLS + c;
+            if (turnFrames - (b.zap[key] ?? -99) > 12) fireLaser(r, c, Math.floor((v - LASER) / 10));
+            b.zap[key] = turnFrames;
+          } else if (v === 2) {
+            const pts = COIN_POINTS * S.level;
+            S.picks[r][c] = 0; addScore(pts); sfx.coin();
+            floats.push({ x: px, y: py, text: "+" + pts, life: 60 });
+            burst(px, py, 10);
+          } else {
+            S.picks[r][c] = 0; gained++; sfx.pick();
+            floats.push({ x: px, y: py, text: "+1", life: 50 });
+            burst(px, py, 6);
+          }
         }
       }
       if (!S.bricks[r][c]) continue;
@@ -322,7 +354,13 @@ canvas { display: block; touch-action: none; }
     return hit;
   }
 
-  function pickValue(v) { return v === 2 ? BONUS : 1; }
+  // dir 0: the whole row, dir 1: the whole column; every brick on the line loses 1
+  function fireLaser(r, c, dir) {
+    beams.push({ r, c, dir, life: 10 });
+    sfx.zap();
+    if (dir === 0) { for (let cc = 0; cc < COLS; cc++) if (S.bricks[r][cc]) damage(r, cc); }
+    else { for (let rr = 0; rr <= MAXROWS; rr++) if (S.bricks[rr][c]) damage(rr, c); }
+  }
 
   // corners of a cut brick, clockwise on screen
   function triPoints(r, c, inset, yOff) {
@@ -515,6 +553,8 @@ canvas { display: block; touch-action: none; }
     if (recordBanner > 0) recordBanner--;
     if (winTimer > 0 && winTimer-- % 12 === 0) burst(40 + Math.random() * (W - 80), 60 + Math.random() * H * 0.5, 16);
     for (const f of floats) { f.y -= 0.8; f.life--; }
+    for (const bm of beams) bm.life--;
+    beams = beams.filter((bm) => bm.life > 0);
     floats = floats.filter((f) => f.life > 0);
     for (const p of particles) { p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life--; }
     particles = particles.filter((p) => p.life > 0);
@@ -588,6 +628,18 @@ canvas { display: block; touch-action: none; }
         ctx.lineWidth = 2; ctx.strokeStyle = LCD; ctx.beginPath(); ctx.arc(px, py, 11, 0, Math.PI * 2); ctx.stroke();
         ctx.fillStyle = LCD; ctx.font = "700 16px Rubik, system-ui, sans-serif"; ctx.fillText("$", px, py + 1);
         ctx.fillStyle = INK;
+      } else if (S.picks[r][c] >= LASER) {
+        const v = S.picks[r][c], dir = Math.floor((v - LASER) / 10), left = v % 10;
+        const px = c * CELL + CELL / 2, py = y + CELL / 2;
+        const glow = 0.6 + Math.sin(performance.now() / 120) * 0.4;
+        ctx.lineWidth = 3; ctx.strokeStyle = INK;
+        ctx.beginPath(); ctx.moveTo(px, py - 14); ctx.lineTo(px + 14, py); ctx.lineTo(px, py + 14); ctx.lineTo(px - 14, py); ctx.closePath(); ctx.stroke();
+        ctx.globalAlpha = glow; ctx.lineWidth = 4;
+        ctx.beginPath();
+        if (dir === 0) { ctx.moveTo(px - 24, py); ctx.lineTo(px + 24, py); } else { ctx.moveTo(px, py - 24); ctx.lineTo(px, py + 24); }
+        ctx.stroke(); ctx.globalAlpha = 1;
+        ctx.fillStyle = INK;
+        for (let i = 0; i < left; i++) ctx.fillRect(px - 9 + i * 7, py + 19, 4, 4); // turns left
       } else if (S.picks[r][c]) {
         const pulse = 1 + Math.sin(performance.now() / 180) * 0.12;
         const px = c * CELL + CELL / 2, py = y + CELL / 2;
@@ -637,6 +689,13 @@ canvas { display: block; touch-action: none; }
       }
     }
 
+    // laser flashes
+    for (const bm of beams) {
+      ctx.globalAlpha = bm.life / 10; ctx.fillStyle = INK;
+      if (bm.dir === 0) ctx.fillRect(0, TOP + bm.r * CELL + off + CELL / 2 - 3, W, 6);
+      else ctx.fillRect(bm.c * CELL + CELL / 2 - 3, 0, 6, FLOOR);
+    }
+    ctx.globalAlpha = 1; ctx.fillStyle = INK;
     // "+1" texts
     ctx.font = "700 16px Rubik, system-ui, sans-serif";
     for (const f of floats) { ctx.globalAlpha = Math.min(1, f.life / 20); ctx.fillText(f.text, f.x, f.y); }
