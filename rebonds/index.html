@@ -270,7 +270,7 @@ canvas { display: block; touch-action: none; }
   }
   function beep(freq, dur, vol) { tone(freq, freq, dur, vol, "square", "beep", 0); }
   const sfx = {
-    launch: () => tone(1100, 260, 0.07, 0.07, "square", "launch", 0.05),
+    launch: () => tone(330, 140, 0.11, 0.08, "triangle", "launch", 0.05),
     wall: () => tone(520, 520, 0.025, 0.045, "triangle", "wall", 0.04),
     hit: () => tone(760 + Math.random() * 60, 1000, 0.045, 0.06, "square", "hit", 0.025),
     brk: () => { tone(420, 60, 0.18, 0.09, "square", "brk", 0.05); tone(1600, 1600, 0.04, 0.035, "square", "brk2", 0.05); },
@@ -525,7 +525,8 @@ canvas { display: block; touch-action: none; }
     turnFrames++;
     if (toLaunch > 0 && --launchTimer <= 0) {
       balls.push({ x: S.launchX, y: FLOOR - R, vx: shotDir.x * SPEED / SUB, vy: shotDir.y * SPEED / SUB, home: false });
-      toLaunch--; launchTimer = LAUNCH_GAP; sfx.launch();
+      if (toLaunch === S.balls) sfx.launch(); // one sound per shot, not per ball
+      toLaunch--; launchTimer = LAUNCH_GAP;
     }
     let flying = 0;
     for (const b of balls) {
