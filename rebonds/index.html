@@ -223,10 +223,10 @@ canvas { display: block; touch-action: none; }
     S.vals.pop(); S.vals.unshift(emptyRow());
     S.shapes.pop(); S.shapes.unshift(emptyRow());
     spawnRow(S.level);
-    // pickups that reach the launch row are given to the player
+    // pickups that reach the bottom without being touched are lost
     for (let r = ROWS; r <= MAXROWS; r++) for (let c = 0; c < COLS; c++) if (S.picks[r][c]) {
-      const v = pickValue(S.picks[r][c]); S.picks[r][c] = 0; S.balls += v;
-      floats.push({ x: c * CELL + CELL / 2, y: FLOOR - 40, text: "+" + v, life: 50 });
+      S.picks[r][c] = 0;
+      burst(c * CELL + CELL / 2, FLOOR - 20, 5);
     }
     shiftT = 1; mode = "shift";
   }
