@@ -172,6 +172,8 @@ canvas { display: block; touch-action: none; }
   const COIN_POINTS = 10;        // a $ coin (every 10 levels) gives 10 points per level
   const LASER = 100;             // picks value >= LASER is a laser: LASER + dir*10 + turns left
   const LASER_TURNS = 3;
+  const RING_CHANCE = 0.45;      // chance that a new row brings a +1 ball
+  const RING_MAX_GAP = 3;        // but never more than 3 rows in a row without one
   const CUT_CHANCE = 1 / 8;      // share of bricks cut diagonally at the bottom
 
   const canvas = document.getElementById("game");
@@ -207,8 +209,12 @@ canvas { display: block; touch-action: none; }
 
   function spawnRow(level) {
     const cols = [...Array(COLS).keys()].sort(() => Math.random() - 0.5);
-    const pickCol = cols.shift();
-    S.picks[0][pickCol] = 1;
+    // +1 rings are now rarer: about one row in two, with a guaranteed one after a dry spell
+    S.sinceRing = (S.sinceRing || 0) + 1;
+    if (Math.random() < RING_CHANCE || S.sinceRing > RING_MAX_GAP) {
+      S.picks[0][cols.shift()] = 1;
+      S.sinceRing = 0;
+    }
     const bonus = level % 10 === 0;
     let n = 1 + Math.floor(Math.random() * (COLS - 1)); // 1 to 6 bricks, any level
     // when bricks get close to the bottom, a laser shows up (one at a time)
@@ -220,7 +226,8 @@ canvas { display: block; touch-action: none; }
     if (bonus) S.picks[0][cols[k++]] = 2; // $ coin
     if (laser) S.picks[0][cols[k++]] = LASER + Math.floor(Math.random() * 2) * 10 + LASER_TURNS;
     for (let i = 0; i < n; i++) {
-      const double = level > 5 && Math.random() < 0.22;
+      // tougher bricks (double value) get more common as levels go up: 10% at level 6, 40% from level 60
+      const double = level > 5 && Math.random() < Math.min(0.4, 0.07 + level / 200);
       S.vals[0][cols[i]] = S.bricks[0][cols[i]] = double ? level * 2 : level;
       // 0 = square, 1 = bottom-left corner cut off, 2 = bottom-right corner cut off
       S.shapes[0][cols[i]] = Math.random() < CUT_CHANCE ? 1 + Math.floor(Math.random() * 2) : 0;
