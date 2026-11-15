@@ -133,7 +133,7 @@ canvas { display: block; touch-action: none; }
     <div class="hud" aria-live="polite">
       <span id="hud-level">Niv 1</span>
       <span class="mid" id="hud-balls">x1</span>
-      <span class="right" id="hud-best">Rec 1</span>
+      <span class="right" id="hud-best" role="button" tabindex="0" title="Appuie deux fois pour effacer le record" style="cursor:pointer">Rec 1</span>
     </div>
     <div class="screen" id="screen">
       <canvas id="game" aria-label="Plateau de jeu : glisse le doigt pour viser, relâche pour tirer"></canvas>
@@ -735,7 +735,7 @@ canvas { display: block; touch-action: none; }
 
     $("hud-level").textContent = "Niv " + S.level;
     $("hud-balls").textContent = S.score;
-    $("hud-best").textContent = "Rec " + S.bestScore;
+    $("hud-best").textContent = resetArmed ? "Effacer ?" : "Rec " + S.bestScore;
   }
 
   // ---------- loop ----------
@@ -805,6 +805,20 @@ canvas { display: block; touch-action: none; }
     setTimeout(() => { if (newArmed && Date.now() - newArmed >= 2400) { newArmed = 0; btn.classList.remove("armed"); $("new-cap").innerHTML = "&#8635;"; } }, 2600);
   });
   $("btn-replay").addEventListener("click", newGame);
+  // tap the record twice to wipe it
+  let resetArmed = false, resetTimer = 0;
+  function resetRecord() {
+    if (!resetArmed) {
+      resetArmed = true;
+      clearTimeout(resetTimer); resetTimer = setTimeout(() => { resetArmed = false; }, 2500);
+      return;
+    }
+    resetArmed = false; clearTimeout(resetTimer);
+    S.bestScore = S.score; S.startBest = 0; S.recordShown = false;
+    save(); sfx.pick();
+  }
+  $("hud-best").addEventListener("click", resetRecord);
+  $("hud-best").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); resetRecord(); } });
   window.addEventListener("resize", resize);
   if (window.ResizeObserver) new ResizeObserver(resize).observe(screenEl);
 
@@ -819,6 +833,13 @@ canvas { display: block; touch-action: none; }
       if (S.score == null) S.score = 0;
       if (S.bestScore == null) S.bestScore = 0;
       if (S.startBest == null) S.startBest = S.bestScore;
+      // one-time wipe of the record, asked for when the rules got harder
+      try {
+        if (!localStorage.getItem("rebonds.reset1")) {
+          S.bestScore = S.score; S.startBest = 0; S.recordShown = false;
+          localStorage.setItem("rebonds.reset1", "1");
+        }
+      } catch (e) {}
       mode = "aim";
     } else {
       S = null; newGame();
