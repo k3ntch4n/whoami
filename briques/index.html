@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Briques de Tamou</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Briques">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#23252e">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}</style>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Exo+2:ital,wght@1,800&display=swap">
+<style>
+/* Layout: une console portable centrée, dimensionnée sur la hauteur de l'écran ; tout l'intérieur est en cqw. */
+:root{
+  --room:#23252e; --room2:#33364a;
+  --plastic:#c9c6c0; --plastic-hi:#dedbd5; --plastic-lo:#a7a49e;
+  --bezel:#585a68; --ink:#2a2f6b; --label:#4a4c5e;
+  --btn:#8e2846; --btn-lo:#5e1a2f; --dpad:#24252b; --pill:#7d7b80;
+  --lcd0:#c8d39c; --lcd1:#8ea468; --lcd2:#4d6a45; --lcd3:#1e3226;
+  --led:#ff3b3b;
+  --pixel:"Press Start 2P", ui-monospace, monospace;
+  --brand:"Exo 2", "Arial Black", system-ui, sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{
+  background:radial-gradient(120% 80% at 50% 0%,var(--room2),var(--room));
+  color:var(--plastic);
+  display:flex;align-items:center;justify-content:center;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:12px;box-sizing:border-box;
+  overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.gb{
+  container-type:inline-size;
+  width:min(430px, calc(100vw - 32px), calc((100dvh - 40px) * 90 / 162));
+  aspect-ratio:90/162;max-width:100%;
+  position:relative;box-sizing:border-box;
+  background:linear-gradient(160deg,var(--plastic-hi),var(--plastic) 40%,var(--plastic-lo));
+  border-radius:3cqw 3cqw 16cqw 3cqw;
+  box-shadow:inset -1.2cqw -1.4cqw 0 rgba(0,0,0,.12), inset 1cqw 1cqw 0 rgba(255,255,255,.35), 0 3cqw 6cqw rgba(0,0,0,.5);
+  padding:0 6.5cqw;
+}
+.top{height:6cqw;border-bottom:.5cqw solid rgba(0,0,0,.12);display:flex;align-items:center;justify-content:space-between;
+  font:800 italic 2.2cqw var(--brand);letter-spacing:.3em;color:var(--label);margin:0 -6.5cqw;padding:0 9cqw;box-shadow:0 .4cqw 0 rgba(255,255,255,.4)}
+.top i{font-style:normal;opacity:.7}
+.bezel{
+  margin-top:5cqw;background:var(--bezel);
+  border-radius:2.5cqw 2.5cqw 11cqw 2.5cqw;
+  padding:6cqw 4cqw 4.5cqw;position:relative;
+  box-shadow:inset 0 .6cqw 1.2cqw rgba(0,0,0,.35);
+}
+.bezel::before{content:"";position:absolute;left:12cqw;right:3cqw;top:2.6cqw;height:.6cqw;border-top:.5cqw solid #8a6f9e;border-bottom:.5cqw solid #6b86a8;opacity:.8}
+.bezel .bt{position:absolute;top:1.4cqw;left:50%;transform:translateX(-50%);background:var(--bezel);padding:0 1.6cqw;
+  font:800 italic 1.9cqw var(--brand);letter-spacing:.2em;color:#d7d5de;white-space:nowrap}
+.led{position:absolute;left:3.2cqw;top:2.2cqw;width:2cqw;height:2cqw;border-radius:50%;background:var(--led);box-shadow:0 0 2cqw var(--led)}
+.led+span{position:absolute;left:6cqw;top:2.3cqw;font:800 1.5cqw var(--brand);color:#c9c8d3;letter-spacing:.1em}
+canvas{display:block;width:100%;aspect-ratio:160/144;background:var(--lcd0);image-rendering:pixelated;
+  box-shadow:inset 0 0 0 .4cqw rgba(0,0,0,.25)}
+.brand{margin-top:2.6cqw;font:800 italic 6.4cqw/1 var(--brand);color:var(--ink);letter-spacing:.02em}
+.brand small{font-size:3.2cqw;letter-spacing:.15em;margin-left:1cqw}
+
+.dpad{position:absolute;left:6cqw;top:121cqw;width:31cqw;height:31cqw;touch-action:none}
+.dpad::before,.dpad::after{content:"";position:absolute;background:var(--dpad);border-radius:1.4cqw;box-shadow:0 1cqw 0 #0d0e11,0 1.4cqw 2cqw rgba(0,0,0,.3)}
+.dpad::before{left:33.33%;width:33.34%;top:0;height:100%}
+.dpad::after{top:33.33%;height:33.34%;left:0;width:100%}
+.dpad .hub{position:absolute;inset:33.33%;z-index:2;border-radius:50%;background:radial-gradient(circle,#1a1b20 30%,transparent 32%)}
+.dpad .ar{position:absolute;z-index:2;width:0;height:0;border:2cqw solid transparent;opacity:.35}
+.ar.u{left:50%;top:5%;transform:translateX(-50%);border-bottom-color:#9a9aa5;border-top:0}
+.ar.d{left:50%;bottom:5%;transform:translateX(-50%);border-top-color:#9a9aa5;border-bottom:0}
+.ar.l{top:50%;left:5%;transform:translateY(-50%);border-right-color:#9a9aa5;border-left:0}
+.ar.r{top:50%;right:5%;transform:translateY(-50%);border-left-color:#9a9aa5;border-right:0}
+.dpad.tilt-u{transform:perspective(60cqw) rotateX(9deg)}
+.dpad.tilt-d{transform:perspective(60cqw) rotateX(-9deg)}
+.dpad.tilt-l{transform:perspective(60cqw) rotateY(-9deg)}
+.dpad.tilt-r{transform:perspective(60cqw) rotateY(9deg)}
+
+.ab{position:absolute;right:5cqw;top:123cqw;width:38cqw;height:24cqw;transform:rotate(-25deg)}
+.btn{position:absolute;width:15cqw;height:15cqw;border-radius:50%;border:0;padding:0;cursor:pointer;
+  background:radial-gradient(circle at 40% 35%,#b03a5c,var(--btn) 60%);
+  box-shadow:0 1.2cqw 0 var(--btn-lo),0 1.6cqw 2cqw rgba(0,0,0,.35);touch-action:none;transition:transform .04s}
+.btn.down{transform:translateY(1cqw);box-shadow:0 .2cqw 0 var(--btn-lo)}
+.btn[data-b="b"]{left:0;top:6cqw}
+.btn[data-b="a"]{right:0;top:0}
+.ab .lab{position:absolute;font:800 italic 3.4cqw var(--brand);color:var(--ink);letter-spacing:.1em}
+.lab.lb{left:5.5cqw;top:23.5cqw}.lab.la{right:5.5cqw;top:17.5cqw}
+
+.ss{position:absolute;left:26cqw;top:160cqw;display:flex;gap:9cqw}
+.pillw{display:flex;flex-direction:column;align-items:center;gap:1.4cqw;transform:rotate(-25deg)}
+.pill{width:12cqw;height:3.4cqw;border-radius:2cqw;border:0;padding:0;cursor:pointer;background:var(--pill);
+  box-shadow:inset 0 0 0 .5cqw #9b999e,0 .7cqw 0 #55545a;touch-action:none}
+.pill.down{transform:translateY(.6cqw);box-shadow:inset 0 0 0 .5cqw #9b999e}
+.pillw span{font:800 italic 2.3cqw var(--brand);color:var(--ink);letter-spacing:.15em}
+
+.spk{position:absolute;right:7cqw;bottom:6cqw;display:flex;gap:2.4cqw;transform:rotate(-28deg)}
+.spk i{display:block;width:1.6cqw;height:15cqw;border-radius:1cqw;background:#8f8c86;box-shadow:inset .4cqw .4cqw .6cqw rgba(0,0,0,.45),.2cqw .2cqw 0 rgba(255,255,255,.4)}
+
+.help{position:absolute;left:6.5cqw;bottom:4cqw;font:700 2cqw/1.5 system-ui,sans-serif;color:#7a776f;max-width:50cqw}
+@media (hover:none){.help{display:none}}
+.btn:focus-visible,.pill:focus-visible{outline:.6cqw solid var(--ink);outline-offset:.8cqw}
+</style>
+</head>
+<body>
+<div class="gb" id="gb">
+  <div class="top"><i>◁</i>OFF · ON<i>▷</i></div>
+  <div class="bezel">
+    <span class="bt">AFFICHAGE À POINTS · SON MONO</span>
+    <div class="led"></div><span>PILE</span>
+    <canvas id="lcd" width="640" height="576" aria-label="Écran du jeu"></canvas>
+  </div>
+  <div class="brand">Tamou<small>· 8</small></div>
+
+  <div class="dpad" id="dpad" aria-label="Croix directionnelle">
+    <div class="hub"></div><i class="ar u"></i><i class="ar d"></i><i class="ar l"></i><i class="ar r"></i>
+  </div>
+
+  <div class="ab">
+    <button class="btn" data-b="b" aria-label="B"></button>
+    <button class="btn" data-b="a" aria-label="A"></button>
+    <span class="lab lb">B</span><span class="lab la">A</span>
+  </div>
+
+  <div class="ss">
+    <div class="pillw"><button class="pill" data-b="select" aria-label="Select"></button><span>SELECT</span></div>
+    <div class="pillw"><button class="pill" data-b="start" aria-label="Start"></button><span>START</span></div>
+  </div>
+
+  <div class="spk"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="help">Clavier : flèches · X / Z tourner · Entrée start · Maj select (son)</div>
+</div>
+
+<script>
+(()=>{
+const cv=document.getElementById('lcd'),g=cv.getContext('2d');
+g.scale(4,4);
+const P=['#c8d39c','#8ea468','#4d6a45','#1e3226'];
+const COLS=10,ROWS=18,FX=16;
+const NAMES='IOTSZJL';
+const SHAPES={
+  I:[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+  O:[[1,1],[1,1]],
+  T:[[0,1,0],[1,1,1],[0,0,0]],
+  S:[[0,1,1],[1,1,0],[0,0,0]],
+  Z:[[1,1,0],[0,1,1],[0,0,0]],
+  J:[[1,0,0],[1,1,1],[0,0,0]],
+  L:[[0,0,1],[1,1,1],[0,0,0]],
+};
+let hi=0;try{hi=+localStorage.getItem('bdp-hi')||0}catch(e){}
+
+// ---------- son ----------
+let ac=null,soundOn=true;
+function audio(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume()}catch(e){}}
+function beep(f,d=.05,v=.06,f2=null,when=0){
+  if(!soundOn||!ac)return;
+  const t=ac.currentTime+when,o=ac.createOscillator(),a=ac.createGain();
+  o.type='square';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  a.gain.setValueAtTime(v,t);a.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(a).connect(ac.destination);o.start(t);o.stop(t+d+.02);
+}
+const sfx={
+  move:()=>beep(330,.025,.03),
+  rot:()=>beep(520,.04,.045,700),
+  lock:()=>beep(140,.07,.06,90),
+  drop:()=>beep(260,.09,.06,80),
+  clear:n=>{const s=n===4?[523,659,784,1047,1319,1568]:[440,554,659,880].slice(0,n+1);s.forEach((f,i)=>beep(f,.07,.05,null,i*.06))},
+  level:()=>[392,523,659,784].forEach((f,i)=>beep(f,.09,.05,null,i*.08)),
+  over:()=>[392,330,262,196,131].forEach((f,i)=>beep(f,.16,.06,null,i*.14)),
+  ui:()=>beep(880,.05,.04),
+};
+function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
+
+// ---------- état ----------
+let state='title',board,cur,next,bag=[],score,lines,level,startLevel=0,fallT,clearRows=[],animT=0,overRow=0,newHi=false;
+const empty=()=>Array.from({length:ROWS},()=>Array(COLS).fill(0));
+board=empty();
+function draw7(){if(!bag.length){bag=[...NAMES];for(let i=bag.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[bag[i],bag[j]]=[bag[j],bag[i]]}}return bag.pop()}
+function mk(n){const m=SHAPES[n].map(r=>r.slice());return{n,t:NAMES.indexOf(n)+1,m,x:Math.floor((COLS-m.length)/2),y:n==='I'?-1:0}}
+function hit(m,px,py){for(let r=0;r<m.length;r++)for(let c=0;c<m.length;c++)if(m[r][c]){const x=px+c,y=py+r;if(x<0||x>=COLS||y>=ROWS)return true;if(y>=0&&board[y][x])return true}return false}
+function rot(m,dir){const n=m.length,o=Array.from({length:n},()=>Array(n).fill(0));for(let r=0;r<n;r++)for(let c=0;c<n;c++){if(dir>0)o[c][n-1-r]=m[r][c];else o[n-1-c][r]=m[r][c]}return o}
+const speed=()=>Math.max(50,800*Math.pow(.83,level));
+
+function newGame(){board=empty();bag=[];score=0;lines=0;level=startLevel;cur=mk(draw7());next=mk(draw7());fallT=0;state='play';newHi=false}
+function spawn(){cur=next;next=mk(draw7());fallT=0;if(hit(cur.m,cur.x,cur.y)){gameOver()}}
+function gameOver(){state='over';overRow=0;animT=0;sfx.over();buzz(200);if(score>hi){hi=score;newHi=true;try{localStorage.setItem('bdp-hi',hi)}catch(e){}}}
+function move(dx){if(!hit(cur.m,cur.x+dx,cur.y)){cur.x+=dx;sfx.move();return true}return false}
+function turn(dir){if(cur.n==='O'){sfx.rot();return}const m=rot(cur.m,dir);for(const k of [0,-1,1,-2,2]){if(!hit(m,cur.x+k,cur.y)){cur.m=m;cur.x+=k;sfx.rot();return}}}
+function step(soft){if(!hit(cur.m,cur.x,cur.y+1)){cur.y++;if(soft)score+=1;return true}lock();return false}
+function hard(){let d=0;while(!hit(cur.m,cur.x,cur.y+1)){cur.y++;d++}score+=d*2;sfx.drop();buzz(25);lock(true)}
+function lock(quiet){
+  let out=false;
+  cur.m.forEach((row,r)=>row.forEach((v,c)=>{if(v){const y=cur.y+r;if(y<0)out=true;else board[y][cur.x+c]=cur.t}}));
+  if(out){cur=null;gameOver();return}
+  if(!quiet)sfx.lock();
+  clearRows=[];for(let y=0;y<ROWS;y++)if(board[y].every(v=>v))clearRows.push(y);
+  cur=null;
+  if(clearRows.length){state='clear';animT=0;sfx.clear(clearRows.length);buzz(clearRows.length===4?[40,40,80]:40)}
+  else spawn();
+}
+function finishClear(){
+  const n=clearRows.length;
+  board=board.filter((_,y)=>!clearRows.includes(y));while(board.length<ROWS)board.unshift(Array(COLS).fill(0));
+  const before=level;
+  score+=[0,100,300,500,800][n]*(level+1);lines+=n;
+  level=Math.max(startLevel,Math.floor(lines/10));
+  if(level>before)sfx.level();
+  state='play';spawn();
+}
+
+// ---------- entrées ----------
+const held={},rep={};
+const DAS=170,ARR=55,SOFT=40;
+function press(b){
+  if(held[b])return;held[b]=true;audio();
+  document.querySelectorAll(`[data-b="${b}"]`).forEach(e=>e.classList.add('down'));
+  if(b==='select'){soundOn=!soundOn;if(soundOn)sfx.ui();return}
+  if(state==='title'){
+    if(b==='left'&&startLevel>0){startLevel--;sfx.move()}
+    if(b==='right'&&startLevel<9){startLevel++;sfx.move()}
+    if(b==='start'||b==='a'){sfx.ui();newGame()}
+    return;
+  }
+  if(state==='over'){if(overRow>=ROWS&&(b==='start'||b==='a')){sfx.ui();state='title'}return}
+  if(state==='pause'){if(b==='start'){state='play';sfx.ui()}return}
+  if(state!=='play')return;
+  if(b==='start'){state='pause';sfx.ui();return}
+  if(b==='left'){move(-1);rep.left=DAS}
+  if(b==='right'){move(1);rep.right=DAS}
+  if(b==='down'){step(true);rep.down=SOFT}
+  if(b==='up')hard();
+  if(b==='a')turn(1);
+  if(b==='b')turn(-1);
+}
+function release(b){held[b]=false;document.querySelectorAll(`[data-b="${b}"]`).forEach(e=>e.classList.remove('down'))}
+
+document.querySelectorAll('[data-b]').forEach(el=>{
+  const b=el.dataset.b;
+  el.addEventListener('pointerdown',e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId)}catch(_){}press(b)});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(t=>el.addEventListener(t,()=>release(b)));
+  el.addEventListener('contextmenu',e=>e.preventDefault());
+});
+
+// croix : on peut glisser le pouce d'une direction à l'autre
+const dp=document.getElementById('dpad');let dpDir=null;
+function setDir(d){if(d===dpDir)return;if(dpDir)release(dpDir);dpDir=d;dp.className='dpad'+(d?' tilt-'+d[0]:'');if(d)press(d)}
+function dirFrom(e){const r=dp.getBoundingClientRect(),x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2;
+  if(Math.hypot(x,y)<r.width*.1)return dpDir;return Math.abs(x)>Math.abs(y)?(x<0?'left':'right'):(y<0?'up':'down')}
+dp.addEventListener('pointerdown',e=>{e.preventDefault();try{dp.setPointerCapture(e.pointerId)}catch(_){}setDir(dirFrom(e))});
+dp.addEventListener('pointermove',e=>{if(dpDir)setDir(dirFrom(e))});
+['pointerup','pointercancel','lostpointercapture'].forEach(t=>dp.addEventListener(t,()=>setDir(null)));
+dp.addEventListener('contextmenu',e=>e.preventDefault());
+
+const KEYS={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'down',ArrowUp:'up',KeyX:'a',KeyK:'a',KeyZ:'b',KeyW:'b',KeyJ:'b',Enter:'start',ShiftLeft:'select',ShiftRight:'select',Space:'up'};
+addEventListener('keydown',e=>{const b=KEYS[e.code];if(!b)return;e.preventDefault();if(b==='left'||b==='right'||b==='up'||b==='down'){dp.className='dpad tilt-'+b[0]}press(b)});
+addEventListener('keyup',e=>{const b=KEYS[e.code];if(!b)return;release(b);if(!dpDir)dp.className='dpad'});
+addEventListener('blur',()=>Object.keys(held).forEach(release));
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')state='pause'});
+
+// ---------- dessin ----------
+const R=(x,y,w,h,c)=>{g.fillStyle=P[c];g.fillRect(x,y,w,h)};
+function txt(s,x,y,c=3,sz=8,align='left'){g.font=`${sz}px "Press Start 2P", monospace`;g.textBaseline='top';g.textAlign=align;g.fillStyle=P[c];g.fillText(s,x,y)}
+function cell(x,y,t){
+  if(t>=1&&t<=7){ // brique LCD à l'ancienne : cadre plein, petit vide, carré plein au centre (comme Rebonds)
+    R(x,y,7,7,3);R(x+1,y+1,5,5,0);R(x+2,y+2,3,3,3);return;
+  }
+  switch(t){
+    case 1: R(x,y,8,8,3);R(x+1,y+1,6,6,1);R(x+1,y+1,6,1,0);R(x+2,y+3,4,2,2);break;          // I : barre
+    case 2: R(x,y,8,8,3);R(x+2,y+2,4,4,0);R(x+3,y+3,2,2,2);break;                            // O : cible
+    case 3: R(x,y,8,8,3);R(x+1,y+1,6,6,0);R(x+3,y+3,2,2,3);break;                            // T : point
+    case 4: R(x,y,8,8,3);R(x+1,y+1,6,6,1);for(let i=0;i<6;i+=2)R(x+1+i,y+6-i,2,1,0);break;  // S : rayé
+    case 5: R(x,y,8,8,3);R(x+1,y+1,6,6,2);R(x+1,y+1,5,1,0);R(x+1,y+1,1,5,0);break;           // Z : biseau
+    case 6: R(x,y,8,8,3);for(let i=0;i<6;i++)for(let j=0;j<6;j++)if((i+j)%2)R(x+1+i,y+1+j,1,1,1);else R(x+1+i,y+1+j,1,1,0);break; // J : damier
+    case 7: R(x,y,8,8,2);R(x,y,8,1,3);R(x,y+7,8,1,3);R(x,y,1,8,3);R(x+7,y,1,8,3);R(x+2,y+2,4,4,1);R(x+2,y+2,1,1,0);break; // L : creux
+    case 8: R(x,y,8,8,3);R(x+1,y+1,6,2,2);R(x+1,y+5,6,2,2);break;                            // rideau de fin
+  }
+}
+// cadre : colonnes métalliques avec rivets et une lumière qui court dans la rainure, fond tramé autour
+let dith=null;
+function dither(x,y,w,h){if(!dith){const c=document.createElement('canvas');c.width=c.height=2;const q=c.getContext('2d');q.fillStyle=P[1];q.fillRect(0,0,2,2);q.fillStyle=P[2];q.fillRect(0,0,1,1);q.fillRect(1,1,1,1);dith=g.createPattern(c,'repeat')}g.fillStyle=dith;g.fillRect(x,y,w,h)}
+function wall(x,left,now){
+  R(x,0,8,144,3);R(x+1,0,1,144,2);R(x+6,0,1,144,2);R(x+3,0,2,144,2);
+  const sp=state==='clear'?6:Math.max(8,30-level*2),py=(Math.floor(now/sp)%172)-14;
+  R(x+3,left?py:130-py,2,14,0);
+  for(let y=4;y<144;y+=16){R(x+2,y,4,4,1);R(x+3,y+1,2,2,0);R(x+4,y+2,1,1,2)}
+  R(x+(left?7:0),0,1,144,1);
+}
+function box(x,y,w,h){R(x,y,w,h,3);R(x+1,y+1,w-2,h-2,0)}
+function piece(p,ox,oy){p.m.forEach((row,r)=>row.forEach((v,c)=>{if(v&&p.y+r>=0)cell(ox+(p.x+c)*8,oy+(p.y+r)*8,p.t)}))}
+function mini(p,cx,cy){const m=SHAPES[p.n];let minx=9,maxx=-1,miny=9,maxy=-1;m.forEach((row,r)=>row.forEach((v,c)=>{if(v){minx=Math.min(minx,c);maxx=Math.max(maxx,c);miny=Math.min(miny,r);maxy=Math.max(maxy,r)}}));
+  const w=(maxx-minx+1)*8,h=(maxy-miny+1)*8;m.forEach((row,r)=>row.forEach((v,c)=>{if(v)cell(cx-w/2+(c-minx)*8,cy-h/2+(r-miny)*8,p.t)}))}
+const pad=(n,l)=>String(n).padStart(l,' ');
+
+function drawPanel(){
+  dither(104,0,56,144);
+  box(106,4,52,28);txt('SCORE',109,8,3);txt(pad(Math.min(score,999999),6),109,20,3);
+  box(106,36,52,23);txt('NIV.',109,39,2);txt(pad(level,2),155,49,3,8,'right');
+  box(106,63,52,23);txt('LIGNES',108,66,2);txt(pad(lines,3),155,76,3,8,'right');
+  box(110,92,44,44);txt('SUIV.',112,94,2);if(next)mini(next,132,120);
+}
+function drawField(){
+  R(FX,0,80,144,0);
+  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){const t=board[y][x];if(t)cell(FX+x*8,y*8,t)}
+}
+function render(now){
+  R(0,0,160,144,0);
+  if(state==='title'){drawTitle(now);return}
+  dither(0,0,8,144);wall(8,1,now);wall(96,0,now);
+  drawField();
+  if(state==='play'&&cur)piece(cur,FX,0);
+  if(state==='clear'){const on=Math.floor(animT/70)%2===0;clearRows.forEach(y=>{if(on)R(FX,y*8,80,8,0);else for(let x=0;x<COLS;x++)R(FX+x*8+1,y*8+3,6,2,1)})}
+  if(state==='over'){for(let y=ROWS-1;y>=ROWS-overRow;y--)for(let x=0;x<COLS;x++)cell(FX+x*8,y*8,8);
+    if(overRow>=ROWS){box(FX+4,40,72,64);txt('PARTIE',FX+40,48,3,8,'center');txt('FINIE',FX+40,58,3,8,'center');
+      txt(newHi?'RECORD!':'',FX+40,72,2,8,'center');if(Math.floor(now/500)%2)txt('START',FX+40,88,3,8,'center')}}
+  if(state==='pause'){R(FX,0,80,144,0);txt('PAUSE',FX+40,60,3,8,'center');txt('START',FX+40,76,2,8,'center')}
+  drawPanel();
+}
+const deco=[[0,0,1],[1,0,1],[2,0,1],[3,0,1],[0,1,3],[0,2,3],[1,2,3],[18,0,6],[19,0,6],[19,1,6],[19,2,6],[17,2,4],[18,2,4],[18,1,4]];
+function drawTitle(now){
+  R(0,0,160,144,0);
+  for(let x=0;x<160;x+=8){cell(x,136,(x/8%7)+1)}
+  for(let x=0;x<160;x+=8)if((x/8)%3!==1)cell(x,128,((x/8+3)%7)+1);
+  [[8,8,2],[16,8,2],[8,16,2],[16,16,2],[136,8,5],[144,8,5],[144,16,5],[152,16,5]].forEach(([x,y,t])=>cell(x,y,t));
+  box(14,30,132,46);R(16,32,128,42,1);R(17,33,126,40,0);
+  txt('BRIQUES',80,38,3,16,'center');txt('DE TAMOU',80,58,2,8,'center');
+  txt('NIVEAU ◄ '+startLevel+' ►',80,86,3,8,'center');
+  if(Math.floor(now/500)%2)txt('APPUIE START',80,102,3,8,'center');
+  txt('RECORD '+hi,80,116,2,8,'center');
+}
+
+// ---------- boucle ----------
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(100,now-last);last=now;
+  if(state==='play'&&cur){
+    for(const d of ['left','right']){if(held[d]){rep[d]-=dt;while(rep[d]<=0&&cur&&state==='play'){move(d==='left'?-1:1);rep[d]+=ARR}}}
+    if(held.down&&cur){rep.down-=dt;while(rep.down<=0&&cur&&state==='play'){step(true);rep.down+=SOFT}fallT=0}
+    else if(cur){fallT+=dt;if(fallT>=speed()){fallT=0;step(false)}}
+  } else if(state==='clear'){animT+=dt;if(animT>=420)finishClear()}
+  else if(state==='over'&&overRow<ROWS){animT+=dt;while(animT>=55&&overRow<ROWS){animT-=55;overRow++}}
+  render(now);
+  requestAnimationFrame(frame);
+}
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(()=>requestAnimationFrame(frame));
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+</script>
+</body>
+</html>
