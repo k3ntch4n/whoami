@@ -1,0 +1,17 @@
+{
+  "name": "Briques de Tamou",
+  "short_name": "Briques",
+  "description": "Jeu de briques qui tombent sur une console portable rétro.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#23252e",
+  "theme_color": "#23252e",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
